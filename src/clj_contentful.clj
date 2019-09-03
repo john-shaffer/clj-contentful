@@ -8,11 +8,13 @@
 (def ^{:dynamic true} *config* nil)
 
 (defn parse-config
-  "If config is a vector of [space-id access-token], converts it to a map.
-  Otherwise, returns config."
+  "If config is a vector of [space-id access-token & [environment]], converts it
+  to a map. Otherwise, returns config."
   [config]
   (if (vector? config)
-    {:space-id (first config), :access-token (last config)}
+    (let [[space-id access-token environment] config]
+      {:space-id (first config), :access-token (last config),
+       :environment (or environment "master")})
     config))
 
 (defmacro defn-wrap
@@ -51,7 +53,7 @@
        "\n  `config` argument is automatically provided.")))
 
 (defop request
-  "Makes a request to Contentful's servers. f determines the method used. f 
+  "Makes a request to Contentful's servers. f determines the method used. f
   should be one of clj-http.client/get, /put, etc., or a compatible function.
   https://www.contentful.com/developers/docs/references/authentication/"
   [config f path]
@@ -70,6 +72,13 @@
                  (assoc config :server cda-server))]
     (with-config config
       (request client/get (str "spaces/" (:space-id config) "/" subpath)))))
+
+(defop cda-env-request
+  "Makes a GET request to the environment set in config. Returns the response
+  body parsed as a map."
+  [config subpath]
+  (cda-request
+   (str "environments/" (:environment config "master") "/" subpath)))
 
 (defop get-space
   "Gets the space referred to by config.
