@@ -134,3 +134,9 @@
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/assets/asset"
   [config asset-id]
   (cda-env-request (str "assets/" asset-id)))
+
+(defop locales
+  "Gets all locales of a space.
+  https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/locales/locale-collection"
+  [config]
+  (cda-env-request "locales"))
