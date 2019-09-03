@@ -22,7 +22,10 @@
      (defn ~name-sym ~@body)
      (alter-var-root #'~name-sym ~wrap-fn)))
 
-(defmacro with-config [config & body]
+(defmacro with-config
+  "Binds the dynamic var clj-contentful/*config* to config, allowing code inside
+  the body to forgo passing config to any function defined with defop."
+  [config & body]
   `(binding [*config* (parse-config ~config)]
      ~@body))
 
@@ -47,7 +50,11 @@
        "\n\n  When used within the dynamic scope of `with-config`, the initial"
        "\n  `config` argument is automatically provided.")))
 
-(defop request [config f path]
+(defop request
+  "Makes a request to Contentful's servers. f determines the method used. f 
+  should be one of clj-http.client/get, /put, etc., or a compatible function.
+  https://www.contentful.com/developers/docs/references/authentication/"
+  [config f path]
   (let [{:keys [access-token server space-id]} config]
     (-> (f (str (url/url server path))
            {:headers {:Authorization (str "Bearer " access-token)}}) ; OAuth 2.0
@@ -65,9 +72,13 @@
       (request client/get (str "spaces/" (:space-id config) "/" subpath)))))
 
 (defop get-space
-  "Gets the space referred to by config."
+  "Gets the space referred to by config.
+  https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/spaces/space"
   [config]
   (cda-request ""))
 
-(defop space-entries [config]
+(defop space-entries
+  "Get all entries of the space.
+  https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/entries/entries-collection"
+  [config]
   (cda-request "entries"))
