@@ -13,7 +13,7 @@
   [config]
   (if (vector? config)
     (let [[space-id access-token environment] config]
-      {:space-id (first config), :access-token (last config),
+      {:space-id space-id, :access-token access-token,
        :environment (or environment "master")})
     config))
 
