@@ -7,6 +7,14 @@
 
 (def ^{:dynamic true} *config* nil)
 
+(defn parse-config
+  "If config is a vector of [space-id access-token], converts it to a map.
+  Otherwise, returns config."
+  [config]
+  (if (vector? config)
+    {:space-id (first config), :access-token (last config)}
+    config))
+
 (defmacro defn-wrap
   "Like defn, but applies wrap-fn."
   [name-sym wrap-fn & body]
@@ -15,7 +23,7 @@
      (alter-var-root #'~name-sym ~wrap-fn)))
 
 (defmacro with-config [config & body]
-  `(binding [*config* ~config]
+  `(binding [*config* (parse-config ~config)]
      ~@body))
 
 (defn wrap-op
