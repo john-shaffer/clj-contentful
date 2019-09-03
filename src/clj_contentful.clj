@@ -86,8 +86,38 @@
   [config]
   (cda-request ""))
 
-(defop space-entries
-  "Get all entries of the space.
+(defop content-types
+  "Gets the content model of a space.
+  https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/content-types/content-model"
+  [config]
+  (cda-env-request "content_types"))
+
+(defop content-type
+  "Gets a single content type.
+  https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/content-types/content-type"
+  [config content-type-id]
+  (cda-env-request (str "content_types/" content-type-id)))
+
+(defop entries
+  "Gets all entries of a space.
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/entries/entries-collection"
   [config]
-  (cda-request "entries"))
+  (cda-env-request "entries"))
+
+(defop entry
+  "Gets a single entry.
+  https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/entries/entry"
+  [config entry-id]
+  (cda-env-request (str "entries/" entry-id)))
+
+(defop assets
+  "Gets all assets of a space.
+  https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/assets/assets-collection"
+  [config]
+  (cda-env-request "assets"))
+
+(defop asset
+  "Gets a single asset.
+  https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/assets/asset"
+  [config asset-id]
+  (cda-env-request (str "assets/" asset-id)))
