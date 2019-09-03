@@ -1,4 +1,5 @@
 (ns clj-contentful
+  (:use clj-contentful.util)
   (:require [cheshire.core :as json]
             [clj-http.client :as client]
             [cemerick.url :as url]))
@@ -16,13 +17,6 @@
       {:space-id space-id, :access-token access-token,
        :environment (or environment "master")})
     config))
-
-(defmacro defn-wrap
-  "Like defn, but applies wrap-fn."
-  [name-sym wrap-fn & body]
-  `(do
-     (defn ~name-sym ~@body)
-     (alter-var-root #'~name-sym ~wrap-fn)))
 
 (defmacro with-config
   "Binds the dynamic var clj-contentful/*config* to config, allowing code inside
