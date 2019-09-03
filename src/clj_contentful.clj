@@ -52,16 +52,29 @@
        "\n\n  When used within the dynamic scope of `with-config`, the initial"
        "\n  `config` argument is automatically provided.")))
 
+(defn handle-array
+  "Returns just the :items from an Array response."
+  [m]
+  (:items m))
+
+(def type-handlers
+  {"Array" handle-array})
+
 (defop request
   "Makes a request to Contentful's servers. f determines the method used. f
   should be one of clj-http.client/get, /put, etc., or a compatible function.
   https://www.contentful.com/developers/docs/references/authentication/"
   [config f path]
-  (let [{:keys [access-token server space-id]} config]
-    (-> (f (str (url/url server path))
-           {:headers {:Authorization (str "Bearer " access-token)}}) ; OAuth 2.0
-         :body
-         (json/parse-string true))))
+  (let [{:keys [access-token server space-id]} config
+        body (-> (f (str (url/url server path))
+                    ; OAuth 2.0
+                    {:headers {:Authorization (str "Bearer " access-token)}})
+                 :body
+                 (json/parse-string true))
+        handler (-> body :sys :type type-handlers)]
+    (if handler
+      (handler body)
+      body)))
 
 (defop cda-request
   "Makes a GET request to the Content Delivery API. Returns the response body
