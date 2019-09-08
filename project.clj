@@ -1,4 +1,4 @@
-(defproject clj-contentful "0.1.0-SNAPSHOT"
+(defproject clj-contentful "1.0.0"
   :description "A Clojure library for the Contentful APIs."
   :url "https://github.com/john-shaffer/clj-contentful"
   :license {:name "The MIT License"
