@@ -1,4 +1,5 @@
 (ns clj-contentful
+  (:refer-clojure :exclude (symbol? type))
   (:use clj-contentful.util)
   (:require [cheshire.core :as json]
             [clj-http.client :as client]
@@ -7,6 +8,33 @@
 (def ^:const cda-server "https://cdn.contentful.com")
 
 (def ^{:dynamic true} *config* nil)
+
+(defn type
+  "Returns the type of a map in the JSON response that has a :type key in
+  (:sys m) or in m."
+  [m]
+  (or (:type (:sys m)) (:type m)))
+
+(defn array? [m]
+  (= "Array" (type m)))
+
+(defn asset? [m]
+  (= "Asset" (type m)))
+
+(defn entry? [m]
+  (= "Entry" (type m)))
+
+(defn link? [m]
+  (= "Link" (type m)))
+
+(defn locale? [m]
+  (= "Locale" (type m)))
+
+(defn space? [m]
+  (= "Space" (type m)))
+
+(defn symbol? [m]
+  (= "Symbol" (type m)))
 
 (defn parse-config
   "If config is a vector of [space-id access-token & [environment]], converts it
@@ -65,7 +93,7 @@
                     {:headers {:Authorization (str "Bearer " access-token)}})
                  :body
                  (json/parse-string true))
-        handler (-> body :sys :type type-handlers)]
+        handler (-> body type type-handlers)]
     (if handler
       (handler body)
       body)))
