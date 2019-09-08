@@ -86,11 +86,12 @@
   "Makes a request to Contentful's servers. f determines the method used. f
   should be one of clj-http.client/get, /put, etc., or a compatible function.
   https://www.contentful.com/developers/docs/references/authentication/"
-  [config f path]
+  [config f & [path query-params]]
   (let [{:keys [access-token server space-id]} config
         body (-> (f (str (url/url server path))
                     ; OAuth 2.0
-                    {:headers {:Authorization (str "Bearer " access-token)}})
+                    {:headers {:Authorization (str "Bearer " access-token)}
+                     :query-params query-params})
                  :body
                  (json/parse-string true))
         handler (-> body type type-handlers)]
@@ -101,25 +102,27 @@
 (defop cda-request
   "Makes a GET request to the Content Delivery API. Returns the response body
   parsed as a map."
-  [config subpath]
+  [config & [subpath query-params]]
   (let [config (if (:server config)
                  config
                  (assoc config :server cda-server))]
     (with-config config
-      (request client/get (str "spaces/" (:space-id config) "/" subpath)))))
+      (request client/get (str "spaces/" (:space-id config) "/" subpath)
+               query-params))))
 
 (defop cda-env-request
   "Makes a GET request to the environment set in config. Returns the response
   body parsed as a map."
-  [config subpath]
+  [config & [subpath query-params]]
   (cda-request
-   (str "environments/" (:environment config "master") "/" subpath)))
+   (str "environments/" (:environment config "master") "/" subpath)
+   query-params))
 
 (defop get-space
   "Gets the space referred to by config.
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/spaces/space"
   [config]
-  (cda-request ""))
+  (cda-request))
 
 (defop content-types
   "Gets the content model of a space.
@@ -136,8 +139,8 @@
 (defop entries
   "Gets all entries of a space.
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/entries/entries-collection"
-  [config]
-  (cda-env-request "entries"))
+  [config & [query-params]]
+  (cda-env-request "entries" query-params))
 
 (defop entry
   "Gets a single entry.
