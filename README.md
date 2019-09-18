@@ -24,7 +24,7 @@ Provide the configuration as `[space-id access-token environment]`. `environment
 (use 'clj-contentful)
 
 ; Gets a space
-(space config)
+(get-space config)
 
 ; Gets the content model of a space
 (content-types config)
