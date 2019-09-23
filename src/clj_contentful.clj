@@ -173,3 +173,110 @@
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/locales/locale-collection"
   [config]
   (cda-env-request "locales"))
+
+; https://github.com/contentful/rich-text/blob/master/packages/rich-text-types/src/marks.ts
+(defmulti apply-text-mark
+  (fn [mark content]
+    mark))
+
+(defmethod apply-text-mark "bold"
+  [mark content]
+  {:tag :strong
+   :content [content]})
+
+(defmethod apply-text-mark "code"
+  [mark content]
+  {:tag :code
+   :content [content]})
+
+(defmethod apply-text-mark "italic"
+  [mark content]
+  {:tag :em
+   :content [content]})
+
+(defmethod apply-text-mark "underline"
+  [mark content]
+  {:tag :u
+   :content [content]})
+
+(defmulti richtext->html :nodeType)
+
+(defmethod richtext->html :default
+  [m]
+  m)
+
+(defmethod richtext->html "blockquote"
+  [m]
+  {:tag :blockquote
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "document"
+  [m]
+  {:tag :div
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "heading-1"
+  [m]
+  {:tag :h1
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "heading-2"
+  [m]
+  {:tag :h2
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "heading-3"
+  [m]
+  {:tag :h3
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "heading-4"
+  [m]
+  {:tag :h5
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "heading-5"
+  [m]
+  {:tag :h5
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "heading-6"
+  [m]
+  {:tag :h6
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "hr"
+  [m]
+  {:tag :hr})
+
+(defmethod richtext->html "hyperlink"
+  [m]
+  {:tag :a
+   :attrs {:href (:uri (:data m))}
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "list-item"
+  [m]
+  {:tag :li
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "ordered-list"
+  [m]
+  {:tag :ol
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "paragraph"
+  [m]
+  {:tag :p
+   :content (mapv richtext->html (:content m))})
+
+(defmethod richtext->html "text"
+  [m]
+  (reduce #(apply-text-mark (:type %2) %)
+   (:value m)
+   (:marks m)))
+
+(defmethod richtext->html "unordered-list"
+  [m]
+  {:tag :ul
+   :content (mapv richtext->html (:content m))})
