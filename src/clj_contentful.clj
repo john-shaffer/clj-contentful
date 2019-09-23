@@ -7,7 +7,11 @@
 
 (def ^:const cda-server "https://cdn.contentful.com")
 
-(def ^{:dynamic true} *config* nil)
+(def ^:dynamic *config* nil)
+
+(defn metafy [m]
+  (with-meta (:fields m)
+    (dissoc m :fields)))
 
 (defn type
   "Returns the type of a map in the JSON response that has a :type key in
@@ -140,25 +144,29 @@
   "Gets all entries of a space.
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/entries/entries-collection"
   [config & [query-params]]
-  (cda-env-request "entries" query-params))
+  (map metafy
+       (cda-env-request "entries" query-params)))
 
 (defop entry
   "Gets a single entry.
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/entries/entry"
   [config entry-id]
-  (cda-env-request (str "entries/" entry-id)))
+  (metafy
+   (cda-env-request (str "entries/" entry-id))))
 
 (defop assets
   "Gets all assets of a space.
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/assets/assets-collection"
   [config]
-  (cda-env-request "assets"))
+  (map metafy
+       (cda-env-request "assets")))
 
 (defop asset
   "Gets a single asset.
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/assets/asset"
   [config asset-id]
-  (cda-env-request (str "assets/" asset-id)))
+  (metafy
+   (cda-env-request (str "assets/" asset-id))))
 
 (defop locales
   "Gets all locales of a space.
