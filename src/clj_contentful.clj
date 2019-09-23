@@ -122,7 +122,7 @@
    (str "environments/" (:environment config "master") "/" subpath)
    query-params))
 
-(defop get-space
+(defop space
   "Gets the space referred to by config.
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/spaces/space"
   [config]
