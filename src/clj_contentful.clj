@@ -11,7 +11,7 @@
 
 (defn metafy [m]
   (with-meta (:fields m)
-    (dissoc m :fields)))
+    (merge (meta m) (dissoc m :fields))))
 
 (defn type
   "Returns the type of a map in the JSON response that has a :type key in
@@ -92,16 +92,19 @@
   https://www.contentful.com/developers/docs/references/authentication/"
   [config f & [path query-params]]
   (let [{:keys [access-token server space-id]} config
-        body (-> (f (str (url/url server path))
+        resp (-> (f (str (url/url server path))
                     ; OAuth 2.0
                     {:headers {:Authorization (str "Bearer " access-token)}
-                     :query-params query-params})
-                 :body
-                 (json/parse-string true))
+                     :query-params query-params}))
+        body (-> resp :body (json/parse-string true))
         handler (-> body type type-handlers)]
-    (if handler
-      (handler body)
-      body)))
+    (with-meta
+      (if handler
+        (handler body)
+        body)
+      (-> body
+          (dissoc :items)
+          (assoc :response resp)))))
 
 (defop cda-request
   "Makes a GET request to the Content Delivery API. Returns the response body
@@ -144,8 +147,10 @@
   "Gets all entries of a space.
   https://www.contentful.com/developers/docs/references/content-delivery-api/#/reference/entries/entries-collection"
   [config & [query-params]]
-  (map metafy
-       (cda-env-request "entries" query-params)))
+  (let [resp (cda-env-request "entries" query-params)]
+    (with-meta
+      (map metafy resp)
+      (meta resp))))
 
 (defop entry
   "Gets a single entry.
