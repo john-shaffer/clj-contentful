@@ -87,7 +87,10 @@
   {"Array" handle-array})
 
 (defn map-of-ids [data]
-  (reduce #(assoc % (get-in %2 [:sys :id]) %2) nil data))
+  (reduce
+   #(assoc % (get-in %2 [:sys :id]) (metafy %2))
+   nil
+   data))
 
 (defop request
   "Makes a request to Contentful's servers. f determines the method used. f
