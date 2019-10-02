@@ -86,6 +86,9 @@
 (def type-handlers
   {"Array" handle-array})
 
+(defn map-of-ids [data]
+  (reduce #(assoc % (get-in %2 [:sys :id]) %2) nil data))
+
 (defop request
   "Makes a request to Contentful's servers. f determines the method used. f
   should be one of clj-http.client/get, /put, etc., or a compatible function.
@@ -97,14 +100,19 @@
                     {:headers {:Authorization (str "Bearer " access-token)}
                      :query-params query-params}))
         body (-> resp :body (json/parse-string true))
-        handler (-> body type type-handlers)]
+        handler (-> body type type-handlers)
+        assets (-> body :includes :Asset map-of-ids)
+        entries (-> body :includes :Entry map-of-ids)]
     (with-meta
       (if handler
         (handler body)
         body)
       (-> body
           (dissoc :items)
-          (assoc :response resp)))))
+          (assoc :response resp
+                 :assets assets
+                 :entries entries
+                 :includes (merge assets entries))))))
 
 (defop cda-request
   "Makes a GET request to the Content Delivery API. Returns the response body
